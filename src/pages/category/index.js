@@ -16,15 +16,18 @@ import Icon from 'react-native-vector-icons/AntDesign';
 import {FlatList, ScrollView, Swipeable} from 'react-native-gesture-handler';
 import axios from 'axios';
 import {get, post, patch, del} from '@/utils/request.js';
-import { ScreenProps, Screens } from '@/navigation/screens';
+import {ScreenProps, Screens} from '@/navigation/screens';
 
 const Category = () => {
-  const navigation = useNavigation<ScreenProps<Screens.Category>['navigation']>();
+  // const navigation =
+  //   useNavigation<ScreenProps<Screens.Category>['navigation']>()
+  const navigation = useNavigation();
 
   const [searchText, setSearchText] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalEdit, setModalEdit] = useState(false);
   const [data, setData] = useState([]);
+  const [dataPaymentHistory, setDataPaymentHistory] = useState([]);
   const [name, setName] = useState('');
   const [image, setImage] = useState('');
   const [editMode, setEditMode] = useState(false);
@@ -38,6 +41,7 @@ const Category = () => {
     require('../../assets/images/5.jpg'),
     require('../../assets/images/6.jpg'),
     require('../../assets/images/7.jpg'),
+    require('../../assets/images/8.jpg'),
   ];
   const handleSearchBlur = () => {
     const lowerCaseSearchText = searchText.toLowerCase();
@@ -137,7 +141,6 @@ const Category = () => {
     );
   };
 
-  // console.log(typeof data);
   const getAPi = async () => {
     try {
       let response = await get('amount');
@@ -149,20 +152,47 @@ const Category = () => {
       console.log(error);
     }
   };
+  const getDataPaymentHistory = async () => {
+    try {
+      let response = await get('payment_history');
+      let list = [];
+      list = response.data;
+      list.reverse();
+      setDataPaymentHistory(list);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const calculateTotalAmount = () => {
+    let totalAmount = 0;
+
+    dataPaymentHistory.forEach(transaction => {
+      if (transaction.type === 'amount') {
+        totalAmount += transaction.money;
+      }
+    });
+
+    return totalAmount;
+  };
+
+  const calculateTotalAmountByCategory = (transactions, categoryName) => {
+    let totalAmount = 0;
+
+    transactions.forEach(transaction => {
+      if (transaction.type === 'amount' && transaction.name === categoryName) {
+        totalAmount += transaction.money;
+      }
+    });
+
+    return totalAmount;
+  };
+
   const onSubmit = async () => {
     setModalVisible(false);
     let formdata = {
       name: name,
       image: image,
     };
-    // if (editMode) {
-    //   const formedit = {id, ...formdata};
-    //   console.log(formedit);
-    //   // await patch('amount', formedit);
-    //   setEditMode(false);
-    // } else {
-    //   await post('amount', formdata);
-    // }
     await post('amount', formdata);
     setName('');
     setImage('');
@@ -170,9 +200,16 @@ const Category = () => {
   };
   useEffect(() => {
     getAPi();
+    getDataPaymentHistory();
   }, []);
-  // const index = 1;
-  // const dynamicImage = require('../../assets/images/1.jpg');
+  const totalAmount = calculateTotalAmount();
+  const totalAmountByCategory = {};
+  data.forEach(category => {
+    totalAmountByCategory[category.name] = calculateTotalAmountByCategory(
+      dataPaymentHistory,
+      category.name,
+    );
+  });
   return (
     <>
       <ScrollView>
@@ -213,7 +250,8 @@ const Category = () => {
                 Tổng chi phí của bạn
               </Text>
               <Text style={{color: '#FFF', fontWeight: '400', fontSize: 28}}>
-                15,000,000 đ
+                {totalAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') +
+                  ' đ'}
               </Text>
             </View>
           </View>
@@ -274,7 +312,11 @@ const Category = () => {
                             backgroundColor: 'transparent',
                             marginRight: 10,
                           }}>
-                          <Text>3,000,000 đ</Text>
+                          <Text>
+                            {totalAmountByCategory[item.name]
+                              .toString()
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' đ'}
+                          </Text>
                         </View>
                       </View>
                     </View>

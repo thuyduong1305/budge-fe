@@ -8,9 +8,8 @@ const HomeScreen = () => {
 
   return (
     <View>
-      <Text>HomeScreen</Text>
       <Button
-        title="Category"
+        title="Quản lý hạng mục"
         onPress={() => navigation.navigate(Screens.Category)}
       />
     </View>

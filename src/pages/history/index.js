@@ -21,7 +21,9 @@ import {Image} from 'react-native';
 import {get} from '@/utils/request.js';
 import moment from 'moment';
 import DatePicker from 'react-native-date-picker';
+import 'moment/locale/vi';
 
+moment.locale('vi');
 const HistoryScreen = () => {
   const imageLink = [
     require('../../assets/images/1.jpg'),
@@ -40,7 +42,7 @@ const HistoryScreen = () => {
       item =>
         item.name.toLowerCase().includes(lowerCaseSearchText) ||
         item.date.toLowerCase().includes(lowerCaseSearchText) ||
-        item.money.toLowerCase().includes(lowerCaseSearchText),
+        item.money.toString().includes(lowerCaseSearchText),
     );
     setData(filteredData);
   };
@@ -91,13 +93,7 @@ const HistoryScreen = () => {
     });
     setData(sortedData);
   };
-  // const handleSelectStartDate = date => {
-  //   setStartDate(date);
-  // };
 
-  // const handleSelectEndDate = date => {
-  //   setEndDate(date);
-  // };
   const filterData = (start, end) => {
     const filteredData = data.filter(item => {
       const itemDate = new Date(item.date);
@@ -307,47 +303,6 @@ const HistoryScreen = () => {
                           </View>
                         </View>
                       </Modal>
-                      {/* {selectDate && (
-                        <View
-                          style={{
-                            backgroundColor: 'white',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}>
-                          <TouchableOpacity
-                            onPress={() => setSelectDateFilter(true)}>
-                            <View
-                              style={{
-                                backgroundColor: 'white',
-                                alignItems: 'center',
-                                flexDirection: 'row',
-
-                                paddingHorizontal: 10,
-                                paddingVertical: 5,
-                              }}>
-                              <Text style={{marginHorizontal: 10}}>
-                                Bắt đầu
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                          <TouchableOpacity>
-                            <View
-                              style={{
-                                backgroundColor: 'white',
-                                alignItems: 'center',
-                                flexDirection: 'row',
-
-                                paddingHorizontal: 10,
-                                paddingVertical: 5,
-                              }}>
-                              <Text style={{marginHorizontal: 10}}>
-                                Kết thúc
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                          
-                        </View>
-                      )} */}
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => setShowList(true)}>
                       <View
@@ -359,7 +314,7 @@ const HistoryScreen = () => {
                           paddingVertical: 5,
                         }}>
                         <Icon name="database" size={23}></Icon>
-                        <Text style={{marginHorizontal: 10}}>Danh mục</Text>
+                        <Text style={{marginHorizontal: 10}}>Hạng mục</Text>
                       </View>
                     </TouchableOpacity>
                     {showList && (
@@ -405,15 +360,18 @@ const HistoryScreen = () => {
                               alignItems: 'center',
                               flexDirection: 'row',
                               paddingHorizontal: 10,
+                              paddingVertical: 5,
                             }}>
                             <Text style={{marginHorizontal: 5}}>Từ</Text>
                             <TextInput
                               onChangeText={value => setMinMoney(value)}
                               style={{
                                 flex: 1,
-                                borderBottomColor: '#615252',
-                                borderBottomWidth: 1,
+                                borderColor: '#9B3922',
+                                borderWidth: 1,
                                 marginLeft: 13,
+                                height: 40,
+                                borderRadius: 10,
                               }}></TextInput>
                           </View>
                           <View
@@ -430,8 +388,11 @@ const HistoryScreen = () => {
                               onBlur={filterDataByMoneyRange}
                               style={{
                                 flex: 1,
-                                borderBottomColor: '#615252',
-                                borderBottomWidth: 1,
+                                borderColor: '#9B3922',
+                                borderWidth: 1,
+                                marginLeft: 3,
+                                height: 40,
+                                borderRadius: 10,
                               }}></TextInput>
                           </View>
                         </View>
@@ -448,6 +409,10 @@ const HistoryScreen = () => {
               data={data}
               renderItem={({item}) => {
                 const imagePath = imageLink[parseInt(item.image)];
+                const textColor =
+                  item.type === 'amount' ? '#DD5746' : '#41B06E';
+                const amountText =
+                  item.type === 'amount' ? '-' + item.money : item.money;
                 return (
                   <View style={styles.item}>
                     <Image
@@ -472,8 +437,8 @@ const HistoryScreen = () => {
                           {moment(item.date).format('YYYY-MM-DD, HH:mm')}
                         </Text>
                       </View>
-                      <Text style={styles.amount}>
-                        {item.money
+                      <Text style={[styles.amount, {color: textColor}]}>
+                        {amountText
                           .toString()
                           .replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' đ'}
                       </Text>
